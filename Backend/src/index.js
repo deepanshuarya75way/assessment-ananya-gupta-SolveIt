@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-require('dotenv').config();
+require('dotenv').config({override:true});
 const main = require('./config/db');
 const cookieParser = require('cookie-parser');
 const authRouter = require("./routes/userAuth");

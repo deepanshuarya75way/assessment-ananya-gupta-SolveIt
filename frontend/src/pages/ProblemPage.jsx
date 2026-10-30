@@ -93,16 +93,44 @@ function ProblemPage() {
   );
 
   const handleRun = async () => {
+    // setRunning(true);
+    // setRightTab("testcase");
+    // setRunResult(null);
+    // try {
+    //   const { data } = await axiosClient.post(`/submission/run/${problemId}`, { code, language });
+    //   setRunResult(data);
+    // } catch (err) {
+    //   setRunResult({ success: false, error: err.response?.data?.message || "An error occurred", testCases: [] });
+    // } finally {
+    //   setRunning(false);
+    // }
+    if(running) return;
     setRunning(true);
     setRightTab("testcase");
     setRunResult(null);
-    try {
-      const { data } = await axiosClient.post(`/submission/run/${problemId}`, { code, language });
+    try{
+      const {data}=await axiosClient.post(
+        `/submission/run/${problemId}`,
+        {code , language}
+      );
+      if(!data || data.error){
+        setRunResult({
+          success:false,
+          error:data?.message || "Execution service failed. Please Retry"
+        });
+        return;
+      }
       setRunResult(data);
-    } catch (err) {
-      setRunResult({ success: false, error: err.response?.data?.message || "An error occurred", testCases: [] });
-    } finally {
+
+    }catch(err){
+      console.error("Run Error:", err);
+      setRunResult({
+        success:false,
+        error:"Execution service failed. Your Code is preserved.Please Retry"
+      });
+    } finally{
       setRunning(false);
+
     }
   };
 
@@ -112,9 +140,26 @@ function ProblemPage() {
     setSubmitResult(null);
     try {
       const { data } = await axiosClient.post(`/submission/submit/${problemId}`, { code, language });
+      // setSubmitResult(data);
+      if(!data || typeof data!=="object" || data.serviceError || data.error){
+        setSubmitResult({
+          success:false,
+          serviceError:true,
+          error:"Execution service failed.Your code is preserved please Retry"
+        });
+        return;
+      }
       setSubmitResult(data);
     } catch (err) {
-      setSubmitResult({ accepted: false, error: err.response?.data?.message || "Submission failed" });
+      // setSubmitResult({ accepted: false, error: err.response?.data?.message || "Submission failed" });
+      console.error("Submit Error:" ,err);
+      setSubmitResult({
+        success:false,
+        serviceError:true,
+        error:"Submission Service is temporarily unavailable. Your code is preseved. Please retry"
+
+      });
+
     } finally {
       setSubmitting(false);
     }
